@@ -1,2 +1,8 @@
+# Ignore local files
+.local/
+
+# Ignore all files and folders related to Scoop package manager
 scoop/
+
+# Ignore GitHub Copilot related files and folders
 github-copilot/

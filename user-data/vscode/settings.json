@@ -1,0 +1,33 @@
+{
+  "editor.detectIndentation": true,
+  "editor.fontFamily": "'RobotoMono Nerd Font Mono', Consolas",
+  "editor.insertSpaces": true,
+  "editor.minimap.enabled": false,
+  "editor.rulers": [
+    80
+  ],
+  "editor.tabSize": 2,
+  "files.exclude": {
+    "**/*.lock": true,
+    "**/node_modules": true,
+    "**/vendor": true
+  },
+  "git.autofetch": true,
+  "powershell.powerShellDefaultVersion": "scoop",
+  "workbench.preferredDarkColorTheme": "Default Dark+",
+  "workbench.preferredLightColorTheme": "Default Light+",
+  "workbench.preferredHighContrastColorTheme": "Default High Contrast",
+  "workbench.preferredHighContrastLightColorTheme": "Default High Contrast Light",
+  "window.autoDetectColorScheme": true,
+  "window.autoDetectHighContrast": true,
+  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.codeFormatting.whitespaceAfterSeparator": false,
+  "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
+  "powershell.codeFormatting.newLineAfterCloseBrace": false,
+  "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.powerShellAdditionalExePaths": {
+    "scoop": "C:\\Users\\USER\\scoop\\shims\\pwsh.exe"
+  }
+}

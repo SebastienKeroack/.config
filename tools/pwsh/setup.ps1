@@ -1,80 +1,77 @@
 $ErrorActionPreference = 'Stop'
-$ProjectRoot = Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../..') | Select-Object -ExpandProperty Path
+. "$PSScriptRoot/utils.ps1"
 
-function Add-LineToProfile {
-  param (
-    [string]$Line
-  )
+$XDGConfigHome = Get-ProjectRoot
 
-  if (-not (Select-String -Path $PROFILE -Pattern ([regex]::Escape($Line)))) {
-    Add-Content -Path $PROFILE -Value $Line
-    Write-Host "Added to profile: $Line"
-  }
+$NerdFont = 'RobotoMono-NF-Mono'
+
+$NeoVimExtraPackages = @(
+  'lazygit',
+  'vcredist2022'
+)
+
+$NeoVimPackages = @(
+  'fd',
+  'fzf',
+  'zig',
+  'pwsh',
+  'nodejs',
+  'ripgrep'
+)
+
+$VSCodeExtensions = @(
+  'github.copilot',
+  'github.copilot-chat',
+  'ms-vscode.powershell',
+  'tamasfe.even-better-toml',
+  'vscodevim.vim'
+)
+
+$VSCodeUserCfgPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\settings.json"
+
+$VSCodeUserPreCfgPath = "$XDGConfigHome\user-data\vscode\settings.json"
+
+$VSCodeUserKbmPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\keybindings.json"
+
+$VSCodeUserPreKbmPath = "$XDGConfigHome\user-data\vscode\keybindings.json"
+
+$VSCodePwshAddExePaths = @{
+  'scoop' = "${env:USERPROFILE}\scoop\shims\pwsh.exe"
 }
- 
+
 function New-Profile {
   if (-not (Test-Path $PROFILE)) {
     New-Item -ItemType File -Path $PROFILE -Force | Out-Null
     Write-Host "PowerShell profile created at: $PROFILE"
-  }
-
-  Add-LineToProfile 'Import-Module Terminal-Icons'
-  Add-LineToProfile 'Set-Alias neovim nvim'
-}
-
-function New-Junction {
-  param (
-    [string]$Name
-  )
-
-  $Target = Join-Path $ProjectRoot $Name
-  if (-not (Test-Path $Target)) {
-    Write-Error "Target path does not exist: $Target"
-    return
-  }
-
-  $Link = Join-Path $env:APPDATA $Name
-  if (Test-Path $Link) {
-    Write-Debug "Junction already exists: $Link"
-    return
-  }
-
-  try {
-    New-Item -Path $Link -ItemType Junction -Value $Target | Out-Null
-    Write-Host "Junction created successfully:"
-    Write-Host "`t$Link -> $Target"
-  }
-  catch {
-    Write-Error "Failed to create junction: $_"
-    throw
+  } else {
+    Write-Debug "PowerShell profile already exists at: $PROFILE"
   }
 }
 
-function Set-EnvironmentVariable {
-  param (
-    [string]$Key,
-    [string]$Value
-  )
+function Install-NeoVim {
+  Install-ScoopBucket 'nerd-fonts'
+  Install-ScoopPackage $NerdFont -Source 'nerd-fonts'
 
-  if (-not $Value) {
-    Write-Error "Value for environment variable '$Key' is empty."
-    return
+  Install-ScoopBucket 'extras'
+  foreach ($pkg in $NeoVimExtraPackages) {
+    Install-ScoopPackage $pkg -Source 'extras'
   }
 
-  if ([Environment]::GetEnvironmentVariable($Key, "User") -eq $Value) {
-    Write-Debug "Environment variable '$Key' is already set to '$Value'."
-    return
+  Install-ScoopBucket 'main'
+  foreach ($pkg in $NeoVimPackages) {
+    Install-ScoopPackage $pkg -Source 'main'
   }
 
-  [Environment]::SetEnvironmentVariable($Key, $Value, "User")
-  Write-Host "Set environment variable '$Key' to '$Value'."
+  Install-ScoopPackage 'alacritty' -Source 'extras'
+  New-Junction 'alacritty'
+
+  Install-ScoopPackage 'neovim'
+  Add-LineToFile -Path $PROFILE -Line 'Set-Alias neovim nvim'
 }
 
-function Set-GitConfig {
-  if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Error "Git is not installed or not found in the PATH."
-    return
-  }
+function Install-Git {
+  Install-ScoopBucket 'main'
+  Install-ScoopPackage 'git'
 
   git config --global core.ignorecase false
   git config --global credential.helper 'store'
@@ -84,118 +81,34 @@ function Set-GitConfig {
   git config --system core.longpaths true
 }
 
-function Backup-AndCopyFile {
-  param (
-    [string]$Src,
-    [string]$Dst,
-    [string]$Name
-  )
+function Install-VSCode {
+  Install-ScoopBucket 'extras'
+  Install-ScoopPackage 'vscode' -Source 'extras'
 
-  $SrcFile = Join-Path $Src $Name
-  if (-not (Test-Path $SrcFile)) {
-    Write-Error "File path does not exist: $SrcFile"
-    return
-  }
-
-  $DstFile = Join-Path $Dst $Name
-  if (Test-Path "$DstFile.bak") {
-    Write-Debug "Backup file already exists: '$DstFile.bak'"
-    return
+  foreach ($path in @($VSCodeUserPreCfgPath, $VSCodeUserCfgPath)) {
+    $dir = [System.IO.Path]::GetDirectoryName($path)
+    if (-not (Test-Path $dir)) {
+      Write-Error "Directory does not exist: $dir"
+      return
+    }
   }
 
-  try {
-    Move-Item $DstFile "$DstFile.bak"
-  }
-  catch {
-    Write-Error "Failed to create a backup file '$Name': $_"
-    throw
-  }
+  Backup-AndCopyFile $VSCodeUserPreCfgPath $VSCodeUserCfgPath
+  Backup-AndCopyFile $VSCodeUserPreKbmPath $VSCodeUserKbmPath
 
-  try {
-    Copy-Item -Path $SrcFile -Destination $DstFile -Force
-    Write-Host "File '$Name' copied to: $DstFile"
-  }
-  catch {
-    Write-Error "Failed to copy file '$Name': $_"
-    throw
-  }
+  $Cfg = Get-Content $VSCodeUserCfgPath -Raw | ConvertFrom-Json
+  $Cfg | Add-Member `
+    -NotePropertyName 'powershell.powerShellAdditionalExePaths' `
+    -NotePropertyValue $VSCodePwshAddExePaths -Force
+  $Cfg | ConvertTo-Json -Depth 9 | `
+    Set-Content -Path $VSCodeUserCfgPath -Encoding UTF8
+
+  Install-VSCodeExtensions -Extensions $VSCodeExtensions
 }
 
-function Set-VSCodeConfig {
-  if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
-    Write-Error "VS Code is not installed or not found in the PATH."
-    return
-  }
-
-  $Src = Join-Path $ProjectRoot 'vscode/User'
-  if (-not (Test-Path $Src)) {
-    Write-Error "Source path does not exist: $Src"
-    return
-  }
-
-  $Dst = Join-Path $env:USERPROFILE 'scoop/apps/vscode/current/data/user-data/User'
-  if (-not (Test-Path $Dst)) {
-    Write-Error "Destination path does not exist: $Dst"
-    return
-  }
-
-  Backup-AndCopyFile $Src $Dst 'settings.json'
-  Backup-AndCopyFile $Src $Dst 'keybindings.json'
-}
-
-function Install-ScoopBucket {
-  param (
-    [string]$Bucket
-  )
-
-  if (-not (scoop bucket list | Select-String -Pattern $Bucket)) {
-    Write-Host "Adding Scoop bucket: $Bucket"
-    scoop bucket add $Bucket
-  }
-}
-
-function Install-ScoopPackage {
-  param (
-    [string]$Package,
-    [string]$Source = "main"
-  )
-
-  $List = scoop list *>&1
-  $Pattern = "(\b$Package\b.*\b$Source\b|\b$Source\b.*\b$Package\b)"
-  if (-not ($List | Select-String -Pattern $Pattern)) {
-    $App = "$Source/$Package"
-    Write-Host "Installing Scoop package: $App"
-    scoop install $App
-  }
-}
-
-function Install-ScoopPackages {
-  if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-    Write-Error "Scoop is not installed or not found in the PATH."
-    return
-  }
-
-  Install-ScoopBucket "nerd-fonts"
-  Install-ScoopPackage "RobotoMono-NF-Mono" -Source "nerd-fonts"
-  Install-ScoopBucket "extras"
-  Install-ScoopPackage "vscode" -Source "extras"
-  Install-ScoopPackage "lazygit" -Source "extras"
-  Install-ScoopPackage "alacritty" -Source "extras"
-  Install-ScoopPackage "vcredist2022" -Source "extras"
-  Install-ScoopBucket "main"
-  Install-ScoopPackage "fd"
-  Install-ScoopPackage "fzf"
-  Install-ScoopPackage "git"
-  Install-ScoopPackage "zig"
-  Install-ScoopPackage "pwsh"
-  Install-ScoopPackage "nodejs"
-  Install-ScoopPackage "ripgrep"
-  Install-ScoopPackage "neovim"
-}
-
-Set-EnvironmentVariable "XDG_CONFIG_HOME" $ProjectRoot
-Install-ScoopPackages
+Set-EnvironmentVariable 'XDG_CONFIG_HOME' $XDGConfigHome
 New-Profile
-New-Junction "alacritty"
-Set-GitConfig
-Set-VSCodeConfig
+Install-ScoopPackage 'pwsh'
+Install-NeoVim
+Install-Git
+Install-VSCode
