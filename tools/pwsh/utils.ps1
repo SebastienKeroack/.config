@@ -6,6 +6,10 @@ function Get-ProjectRoot {
   return Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../..') | Select-Object -ExpandProperty Path
 }
 
+function Get-PwshProfilePath {
+  return $PROFILE.CurrentUserAllHosts
+}
+
 function Add-LineToFile {
   param (
     [string]$Path,
@@ -17,8 +21,8 @@ function Add-LineToFile {
     return
   }
 
-  if (-not (Select-String -Path $PROFILE -Pattern ([regex]::Escape($Line)))) {
-    Add-Content -Path $PROFILE -Value $Line
+  if (-not (Select-String -Path $Path -Pattern ([regex]::Escape($Line)))) {
+    Add-Content -Path $Path -Value $Line
     Write-Host "Added to profile: $Line"
   } else {
     Write-Debug "Line already exists in profile: $Line"

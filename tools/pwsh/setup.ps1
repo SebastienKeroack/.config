@@ -40,11 +40,12 @@ $VSCodePwshAddExePaths = @{
 }
 
 function New-Profile {
-  if (-not (Test-Path $PROFILE)) {
-    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
-    Write-Host "PowerShell profile created at: $PROFILE"
+  $Path = Get-PwshProfilePath
+  if (-not (Test-Path $Path)) {
+    New-Item -ItemType File -Path $Path -Force | Out-Null
+    Write-Host "PowerShell profile created at: $Path"
   } else {
-    Write-Debug "PowerShell profile already exists at: $PROFILE"
+    Write-Debug "PowerShell profile already exists at: $Path"
   }
 }
 
@@ -66,7 +67,7 @@ function Install-NeoVim {
   New-Junction 'alacritty'
 
   Install-ScoopPackage 'neovim'
-  Add-LineToFile -Path $PROFILE -Line 'Set-Alias neovim nvim'
+  Add-LineToFile -Path (Get-PwshProfilePath) -Line 'Set-Alias neovim nvim'
 }
 
 function Install-Git {

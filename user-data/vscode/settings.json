@@ -9,7 +9,17 @@
   "editor.tabSize": 2,
   "files.exclude": {
     "**/*.lock": true,
+    "**/github-copilot": true,
     "**/node_modules": true,
+    "**/scoop": true,
+    "**/vendor": true
+  },
+  "search.exclude": {
+    "**/*.env": true,
+    "**/*.lock": true,
+    "**/github-copilot": true,
+    "**/node_modules": true,
+    "**/scoop": true,
     "**/vendor": true
   },
   "git.autofetch": true,
