@@ -18,13 +18,34 @@ $WSLUserName = (
   Select-String '^default='
 ).ToString().Split('=')[1]
 
+$ASDF_VER = '0.18.0'
+
+$ASDF_ARCHIVE = "asdf-v$ASDF_VER-linux-amd64.tar.gz"
+
 if (-not (Test-Path $WSLDistTempTarFile)) {
   # 1. Install the distribution (if not already installed)
   Write-Host "Install the distribution '$WSLDist'"
   wsl --install -d $WSLDist
 
   Write-Host "Update the distribution '$WSLDist'"
-  wsl -d $WSLDist -- sudo bash -c 'apt update && apt upgrade -y'
+  wsl -d $WSLDist -- sudo bash -c @'
+apt update &&
+apt upgrade -y &&
+apt install git bash
+'@
+
+  Write-Host "Install '$ASDF_ARCHIVE' in the distribution '$WSLDist'"
+  wsl -d $WSLDist -- bash -c @"
+curl -L -o $ASDF_ARCHIVE https://github.com/asdf-vm/asdf/releases/download/v$ASDF_VER/$ASDF_ARCHIVE &&
+tar -xzf $ASDF_ARCHIVE &&
+mkdir -p ~/.local/bin &&
+mv asdf ~/.local/bin/ &&
+chmod +x ~/.local/bin/asdf &&
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc &&
+source ~/.bashrc &&
+type -a asdf &&
+asdf --version
+"@
 
   # 2. Export the distribution to a tar file
   Write-Host "Export the distribution '$WSLDist' to '$WSLDistTempTarFile'"
@@ -49,6 +70,12 @@ if (-not (Test-Path $WSLDistDirBase)) {
 if (-not (Test-Path $WSLDistCfgPath)) {
   # 5. Import the configuration file
   Write-Host "Import the distribution as '$WSLDistName' to '$WSLDistDir'"
+  Write-Host @'
+After importing the distribution, you may see a warning in PowerShell that the
+terminal icon for the distribution profile cannot be found. To fix this, open
+Windows Terminal settings, go to 'Profiles' for your distribution, and remove
+the '//?/' prefix from the icon path.
+'@
   wsl --import $WSLDistName $WSLDistDir $WSLDistTempTarFile
 
   # 6. Import the configuration file
@@ -64,4 +91,3 @@ You may be prompted for your password.
 } else {
   Write-Debug "Config file '$WSLDistCfgPath' already exists."
 }
-

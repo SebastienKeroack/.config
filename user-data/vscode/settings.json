@@ -49,6 +49,7 @@
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.codeFormatting.useCorrectCasing": true,
   "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.integratedConsole.startInBackground": true,
   "powershell.powerShellDefaultVersion": "scoop",
   "powershell.powerShellAdditionalExePaths": {
     "scoop": "C:\\Users\\USER\\scoop\\shims\\pwsh.exe"

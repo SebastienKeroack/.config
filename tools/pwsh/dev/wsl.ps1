@@ -160,5 +160,5 @@ if (-not (Test-WSL)) {
   Install-WSL
 }
 
-Install-RancherDesktop
+#Install-RancherDesktop
 Install-VSCodeExtensions -Extensions $VSCodeExtensions
