@@ -22,21 +22,34 @@
     "**/scoop": true,
     "**/vendor": true
   },
+  "files.associations": {
+    ".wslconfig": "Properties"
+  },
   "git.autofetch": true,
-  "powershell.powerShellDefaultVersion": "scoop",
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "text": "Use Conventional Commits format: type(scope): description" },
+    { "text": "Use imperative mood: 'Add feature' not 'Added feature'" },
+    { "text": "Keep subject line concise and under 50 characters" },
+    { "text": "Allowed types: feat, fix, docs, style, refactor, perf, test, chore, ci" },
+    { "text": "Include scope when relevant (e.g., api, ui, auth). Use lowercase." },
+    { "text": "Reference related issues using #number (e.g., #123)" },
+    { "text": "Separate body and footer with blank lines if needed" },
+    { "text": "Don't end subject line with a period (.)" }
+  ],
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
   "workbench.preferredDarkColorTheme": "Default Dark+",
   "workbench.preferredLightColorTheme": "Default Light+",
   "workbench.preferredHighContrastColorTheme": "Default High Contrast",
   "workbench.preferredHighContrastLightColorTheme": "Default High Contrast Light",
   "window.autoDetectColorScheme": true,
   "window.autoDetectHighContrast": true,
+  "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
+  "powershell.codeFormatting.newLineAfterCloseBrace": false,
   "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.codeFormatting.useCorrectCasing": true,
-  "powershell.codeFormatting.whitespaceAfterSeparator": false,
-  "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
-  "powershell.codeFormatting.newLineAfterCloseBrace": false,
   "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.powerShellDefaultVersion": "scoop",
   "powershell.powerShellAdditionalExePaths": {
     "scoop": "C:\\Users\\USER\\scoop\\shims\\pwsh.exe"
   }

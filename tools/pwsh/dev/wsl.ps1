@@ -7,8 +7,6 @@ $VSCodeExtensions = @(
   'ms-vscode-remote.remote-wsl'
 )
 
-$WSLDistroName = 'Ubuntu-24.04'
-
 $WSLUserCfgPath = "$env:USERPROFILE\.wslconfig"
 
 $WSLUserPreCfgPath = "$(Get-ProjectRoot)\user-data\.wslconfig"
@@ -38,6 +36,11 @@ function New-WSLConfig {
   Write-Host 'WSL configuration file created with default settings.'
 }
 
+function Install-RancherDesktop {
+  Install-ScoopBucket 'extras'
+  Install-ScoopPackage 'rancher-desktop' -Source 'extras'
+}
+
 function Install-WSL {
   # Enable the Windows Subsystem for Linux
   dism.exe /online /enable-feature `
@@ -51,9 +54,6 @@ function Install-WSL {
 
   # Set WSL2 as the default version
   wsl --set-default-version 2
-
-  # Install the default WSL distribution
-  wsl --install -d $WSLDistroName
 
   New-WSLConfig
 
@@ -160,4 +160,5 @@ if (-not (Test-WSL)) {
   Install-WSL
 }
 
+Install-RancherDesktop
 Install-VSCodeExtensions -Extensions $VSCodeExtensions

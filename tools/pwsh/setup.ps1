@@ -3,6 +3,10 @@ $ErrorActionPreference = 'Stop'
 
 $XDGConfigHome = Get-ProjectRoot
 
+$GitUserEmail = 'dev@sebastienkeroack.com'
+
+$GitUserName = 'Sébastien Kéroack'
+
 $NerdFont = 'RobotoMono-NF-Mono'
 
 $NeoVimExtraPackages = @(
@@ -77,8 +81,8 @@ function Install-Git {
   git config --global core.ignorecase false
   git config --global credential.helper 'store'
   git config --global init.defaultBranch 'main'
-  git config --global user.email 'dev@sebastienkeroack.com'
-  git config --global user.name 'Sébastien Kéroack'
+  git config --global user.email $GitUserEmail
+  git config --global user.name $GitUserName
   git config --system core.longpaths true
 }
 
