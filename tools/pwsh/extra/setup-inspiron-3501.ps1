@@ -44,6 +44,9 @@ winget install Mega.MEGASync
 # Use EnergyStarX to monitor and optimize power usage
 winget install NickJohn.EnergyStarX
 
+# TODO: Install ExplorerPatcher to customize the taskbar
+# @see: https://github.com/valinet/ExplorerPatcher?tab=readme-ov-file
+# ...
 
 # Nerd Fonts:
 # PowerShell -> Settings -> Profiles -> Defaults -> Font face:
