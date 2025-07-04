@@ -7,9 +7,9 @@ $VSCodeExtensions = @(
   'ms-vscode-remote.remote-wsl'
 )
 
-$WSLUserCfgPath = "$env:USERPROFILE\.wslconfig"
+$WSLUserCfgSrcPath = "$(Get-ProjectRoot)\user-data\wsl\.wslconfig"
 
-$WSLUserPreCfgPath = "$(Get-ProjectRoot)\user-data\.wslconfig"
+$WSLUserCfgDstPath = "$env:USERPROFILE\.wslconfig"
 
 $WSLExePath = "$env:SystemRoot\System32\wsl.exe"
 
@@ -17,22 +17,22 @@ $WSLKernelPath = "$env:LOCALAPPDATA\Packages\MicrosoftCorporationII.WindowsSubsy
 
 $WSLKernelUrl = 'https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi'
 
-$WSLKernelMSIPath = "$env:TEMP\wsl_update_x64.msi"
+$WSLKernelSetupPath = "$env:TEMP\wsl_update_x64.msi"
 
 function New-WSLConfig {
-  if (-not (Test-Path $WSLUserCfgPath)) {
-    Write-Host "Creating WSL configuration file at: $WSLUserCfgPath"
-    New-Item -ItemType File -Path $WSLUserCfgPath -Force | Out-Null
+  if (-not (Test-Path $WSLUserCfgDstPath)) {
+    Write-Host "Creating WSL configuration file at: $WSLUserCfgDstPath"
+    New-Item -ItemType File -Path $WSLUserCfgDstPath -Force | Out-Null
   } else {
-    Write-Debug "WSL configuration file already exists at: $WSLUserCfgPath"
+    Write-Debug "WSL configuration file already exists at: $WSLUserCfgDstPath"
   }
 
-  if (-not (Test-Path $WSLUserPreCfgPath)) {
-    Write-Error "Source directory does not exist: $WSLUserPreCfgPath"
+  if (-not (Test-Path $WSLUserCfgSrcPath)) {
+    Write-Error "Source directory does not exist: $WSLUserCfgSrcPath"
     return
   }
 
-  Backup-AndCopyFile $WSLUserPreCfgPath $WSLUserCfgPath
+  Backup-AndCopyFile $WSLUserCfgSrcPath $WSLUserCfgDstPath
   Write-Host 'WSL configuration file created with default settings.'
 }
 
@@ -62,17 +62,17 @@ function Install-WSL {
 
 function Install-WSLKernel {
   Write-Host 'Downloading WSL2 kernel update...'
-  Invoke-WebRequest -Uri $WSLKernelUrl -OutFile $WSLKernelMSIPath
-  if (-not (Test-Path $WSLKernelMSIPath)) {
+  Invoke-WebRequest -Uri $WSLKernelUrl -OutFile $WSLKernelSetupPath
+  if (-not (Test-Path $WSLKernelSetupPath)) {
     Write-Error 'Failed to download the kernel update.'
     return
   }
 
   Write-Host 'Installing WSL2 kernel update...'
   Start-Process `
-    msiexec.exe -ArgumentList "/i '$WSLKernelMSIPath' /quiet /norestart" -Wait
+    msiexec.exe -ArgumentList "/i '$WSLKernelSetupPath' /quiet /norestart" -Wait
   Write-Host 'WSL2 kernel installed successfully.'
-  Remove-Item $WSLKernelMSIPath
+  Remove-Item $WSLKernelSetupPath
 }
 
 function Test-WSLAdmin {

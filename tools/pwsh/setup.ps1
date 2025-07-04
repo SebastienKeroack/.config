@@ -31,13 +31,13 @@ $VSCodeExtensions = @(
   'vscodevim.vim'
 )
 
-$VSCodeUserCfgPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\settings.json"
+$VSCodeUserCfgSrcPath = "$XDGConfigHome\user-data\vscode\settings.json"
 
-$VSCodeUserPreCfgPath = "$XDGConfigHome\user-data\vscode\settings.json"
+$VSCodeUserCfgDstPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\settings.json"
 
-$VSCodeUserKbmPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\keybindings.json"
+$VSCodeUserKbmSrcPath = "$XDGConfigHome\user-data\vscode\keybindings.json"
 
-$VSCodeUserPreKbmPath = "$XDGConfigHome\user-data\vscode\keybindings.json"
+$VSCodeUserKbmDstPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\keybindings.json"
 
 $VSCodePwshAddExePaths = @{
   'scoop' = "${env:USERPROFILE}\scoop\shims\pwsh.exe"
@@ -90,7 +90,7 @@ function Install-VSCode {
   Install-ScoopBucket 'extras'
   Install-ScoopPackage 'vscode' -Source 'extras'
 
-  foreach ($path in @($VSCodeUserPreCfgPath, $VSCodeUserCfgPath)) {
+  foreach ($path in @($VSCodeUserCfgSrcPath, $VSCodeUserCfgDstPath)) {
     $dir = [System.IO.Path]::GetDirectoryName($path)
     if (-not (Test-Path $dir)) {
       Write-Error "Directory does not exist: $dir"
@@ -98,15 +98,15 @@ function Install-VSCode {
     }
   }
 
-  Backup-AndCopyFile $VSCodeUserPreCfgPath $VSCodeUserCfgPath
-  Backup-AndCopyFile $VSCodeUserPreKbmPath $VSCodeUserKbmPath
+  Backup-AndCopyFile $VSCodeUserCfgSrcPath $VSCodeUserCfgDstPath
+  Backup-AndCopyFile $VSCodeUserKbmSrcPath $VSCodeUserKbmDstPath
 
-  $Cfg = Get-Content $VSCodeUserCfgPath -Raw | ConvertFrom-Json
+  $Cfg = Get-Content $VSCodeUserCfgDstPath -Raw | ConvertFrom-Json
   $Cfg | Add-Member `
     -NotePropertyName 'powershell.powerShellAdditionalExePaths' `
     -NotePropertyValue $VSCodePwshAddExePaths -Force
   $Cfg | ConvertTo-Json -Depth 9 | `
-    Set-Content -Path $VSCodeUserCfgPath -Encoding UTF8
+    Set-Content -Path $VSCodeUserCfgDstPath -Encoding UTF8
 
   Install-VSCodeExtensions -Extensions $VSCodeExtensions
 }
