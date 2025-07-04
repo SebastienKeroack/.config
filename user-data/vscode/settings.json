@@ -27,14 +27,11 @@
   },
   "git.autofetch": true,
   "github.copilot.chat.commitMessageGeneration.instructions": [
-    { "text": "Use Conventional Commits format: type(scope): description" },
-    { "text": "Use imperative mood: 'Add feature' not 'Added feature'" },
-    { "text": "Keep subject line concise and under 50 characters" },
+    { "text": "Use Conventional Commits: type(scope): description" },
+    { "text": "Use imperative mood. No periods at end." },
     { "text": "Allowed types: feat, fix, docs, style, refactor, perf, test, chore, ci" },
-    { "text": "Include scope when relevant (e.g., api, ui, auth). Use lowercase." },
-    { "text": "Reference related issues using #number (e.g., #123)" },
-    { "text": "Separate body and footer with blank lines if needed" },
-    { "text": "Don't end subject line with a period (.)" }
+    { "text": "Use lowercase scope if relevant. Reference issues with #number." },
+    { "text": "Keep subject concise. Separate body/footer with blank lines if needed." }
   ],
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "workbench.preferredDarkColorTheme": "Default Dark+",
