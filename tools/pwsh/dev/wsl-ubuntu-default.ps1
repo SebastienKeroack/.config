@@ -44,6 +44,8 @@ apt-get install -y make llvm-18 clang-18
 # Set clang and clang++ to use version 18 by default
 update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
 update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+# Set LLVM to use version 18 by default
+update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-18 100
 # Install required packages to compile Python
 apt-get install -y build-essential gdb lcov pkg-config \
   libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
