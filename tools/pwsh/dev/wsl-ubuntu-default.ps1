@@ -40,7 +40,7 @@ apt-get upgrade -&
 # Install required packages for asdf and Python
 apt-get install -y bash git unzip zip
 # Install required packages to compile TensorFlow
-apt-get install -y make llvm-18 clang-18
+apt-get install -y make llvm-18 clang-18 clang-format
 # Set clang and clang++ to use version 18 by default
 update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
 update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
