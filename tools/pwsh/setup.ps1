@@ -18,9 +18,12 @@ $NeoVimPackages = @(
   'fd',
   'fzf',
   'zig',
-  'pwsh',
   'nodejs',
   'ripgrep'
+)
+
+$RequiredPackages = @(
+  'pwsh'
 )
 
 $VSCodeExtensions = @(
@@ -53,6 +56,18 @@ function New-Profile {
   }
 }
 
+function Install-Git {
+  Install-ScoopBucket 'main'
+  Install-ScoopPackage 'git'
+
+  git config --global core.ignorecase false
+  git config --global credential.helper 'store'
+  git config --global init.defaultBranch 'main'
+  git config --global user.email $GitUserEmail
+  git config --global user.name $GitUserName
+  git config --system core.longpaths true
+}
+
 function Install-NeoVim {
   Install-ScoopBucket 'nerd-fonts'
   Install-ScoopPackage $NerdFont -Source 'nerd-fonts'
@@ -74,16 +89,11 @@ function Install-NeoVim {
   Add-LineToFile -Path (Get-PwshProfilePath) -Line 'Set-Alias neovim nvim'
 }
 
-function Install-Git {
+function Install-RequiredPackages {
   Install-ScoopBucket 'main'
-  Install-ScoopPackage 'git'
-
-  git config --global core.ignorecase false
-  git config --global credential.helper 'store'
-  git config --global init.defaultBranch 'main'
-  git config --global user.email $GitUserEmail
-  git config --global user.name $GitUserName
-  git config --system core.longpaths true
+  foreach ($pkg in $RequiredPackages) {
+    Install-ScoopPackage $pkg -Source 'main'
+  }
 }
 
 function Install-VSCode {
@@ -113,7 +123,7 @@ function Install-VSCode {
 
 Set-EnvironmentVariable 'XDG_CONFIG_HOME' $XDGConfigHome
 New-Profile
-Install-ScoopPackage 'pwsh'
+Install-RequiredPackages
 Install-NeoVim
 Install-Git
 Install-VSCode
