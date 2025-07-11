@@ -108,13 +108,6 @@ You may be prompted for your password.
 '@
   wsl -d $WSLDistName -e sudo cp "/home/$WSLUserName/wsl.conf" '/etc/wsl.conf'
 
-  Write-Host "Change the terminal prompt in the distribution '$WSLDistName'"
-  wsl -d $WSLDistName -e bash -c @'
-cp ~/.bashrc ~/.bashrc.bak
-sed -i "s/\\\[\\033\[01\;32m\\\]\\u\@\\h\\\[\\033\[00m\\\]\:\\\[\\033\[01\;34m\\\]\\w\\\[\\033\[00m\\\]\\\$ /\\\[\\033\[00m\\\]\\\$ /" ~/.bashrc
-sed -i "s/\\u\@\\h\:\\w\\$ /\\$ /" ~/.bashrc
-'@
-
   wsl --terminate $WSLDistName
 } else {
   Write-Debug "Config file '$WSLDistCfgDstPath' already exists."
