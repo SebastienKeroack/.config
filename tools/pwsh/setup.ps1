@@ -42,8 +42,10 @@ $VSCodeUserKbmSrcPath = "$XDGConfigHome\user-data\vscode\keybindings.json"
 
 $VSCodeUserKbmDstPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\keybindings.json"
 
+$VSCodeTermExtWindowsExe = "${env:USERPROFILE}\scoop\shims\pwsh.exe"
+
 $VSCodePwshAddExePaths = @{
-  'scoop' = "${env:USERPROFILE}\scoop\shims\pwsh.exe"
+  'scoop' = $VSCodeTermExtWindowsExe
 }
 
 function New-Profile {
@@ -112,6 +114,9 @@ function Install-VSCode {
   Backup-AndCopyFile $VSCodeUserKbmSrcPath $VSCodeUserKbmDstPath
 
   $Cfg = Get-Content $VSCodeUserCfgDstPath -Raw | ConvertFrom-Json
+  $Cfg | Add-Member `
+    -NotePropertyName 'terminal.external.windowsExec' `
+    -NotePropertyValue $VSCodeTermExtWindowsExe -Force
   $Cfg | Add-Member `
     -NotePropertyName 'powershell.powerShellAdditionalExePaths' `
     -NotePropertyValue $VSCodePwshAddExePaths -Force
