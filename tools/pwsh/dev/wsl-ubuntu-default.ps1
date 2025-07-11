@@ -64,8 +64,7 @@ tar -xzf $ASDF_ARCHIVE
 mkdir -p ~/.local/bin
 mv asdf ~/.local/bin/
 chmod +x ~/.local/bin/asdf
-echo 'export PATH="$HOME/.local/bin:$HOME/.asdf/shims:$PATH"' >> ~/.bash_profile
-source ~/.bash_profile
+echo 'export PATH="$PATH:$HOME/.local/bin:$HOME/.asdf/shims"' >> ~/.bash_profile
 '@
 
   # 2. Export the distribution to a tar file
