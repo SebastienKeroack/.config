@@ -9,7 +9,7 @@
   "editor.tabSize": 2,
   "editor.wordWrap": "off",
   "files.exclude": {
-    "**/.venv": true,
+    "**/.venv*": true,
     "**/*.egg-info": true,
     "**/*.lock": true,
     "**/__pycache__": true,
@@ -19,7 +19,7 @@
     "**/vendor": true
   },
   "search.exclude": {
-    "**/.venv": true,
+    "**/.venv*": true,
     "**/*.egg-info": true,
     "**/*.env": true,
     "**/*.lock": true,
