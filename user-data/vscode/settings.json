@@ -40,7 +40,6 @@
     { "text": "Use lowercase scope if relevant. Reference issues with #number." },
     { "text": "Keep subject concise. Separate body/footer with blank lines if needed." }
   ],
-  "terminal.external.windowsExec": "C:\\Users\\USER\\scoop\\shims\\pwsh.exe",
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "workbench.preferredDarkColorTheme": "Default Dark+",
   "workbench.preferredLightColorTheme": "Default Light+",
@@ -54,9 +53,5 @@
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.codeFormatting.useCorrectCasing": true,
   "powershell.codeFormatting.whitespaceBetweenParameters": true,
-  "powershell.integratedConsole.startInBackground": true,
-  "powershell.powerShellDefaultVersion": "scoop",
-  "powershell.powerShellAdditionalExePaths": {
-    "scoop": "C:\\Users\\USER\\scoop\\shims\\pwsh.exe"
-  }
+  "powershell.integratedConsole.startInBackground": true
 }

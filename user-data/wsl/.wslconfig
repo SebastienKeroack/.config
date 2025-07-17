@@ -1,13 +1,13 @@
 # @see: https://learn.microsoft.com/en-us/windows/wsl/wsl-config
 [wsl2]
-guiApplications = true
-nestedVirtualization = true
-vmIdleTimeout = 1800000
-networkingMode = mirrored
-firewall = true
-dnsTunneling = true
-defaultVhdSize = 32GB
+guiApplications=true
+nestedVirtualization=true
+vmIdleTimeout=1800000
+networkingMode=mirrored
+firewall=true
+dnsTunneling=true
+defaultVhdSize=128GB
 
 [experimental]
-autoMemoryReclaim = gradual
-hostAddressLoopback = true
+autoMemoryReclaim=gradual
+hostAddressLoopback=true

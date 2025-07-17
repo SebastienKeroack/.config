@@ -1,132 +1,137 @@
-$ErrorActionPreference = 'Stop'
-. "$PSScriptRoot/utils.ps1"
+$ErrorActionPreference = "Stop"
+. "$PSScriptRoot/utils/code.ps1"
+. "$PSScriptRoot/utils/common.ps1"
+. "$PSScriptRoot/utils/scoop.ps1"
 
-$XDGConfigHome = Get-ProjectRoot
+Export-UtilsEnvironmentVariables
 
-$GitUserEmail = 'dev@sebastienkeroack.com'
-
-$GitUserName = 'Sébastien Kéroack'
-
-$NerdFont = 'RobotoMono-NF-Mono'
-
-$NeoVimExtraPackages = @(
-  'lazygit',
-  'vcredist2022'
-)
-
-$NeoVimPackages = @(
-  'fd',
-  'fzf',
-  'zig',
-  'nodejs',
-  'ripgrep'
-)
-
-$RequiredPackages = @(
-  'pwsh'
-)
-
-$VSCodeExtensions = @(
-  'github.copilot',
-  'github.copilot-chat',
-  'ms-vscode.powershell',
-  'tamasfe.even-better-toml',
-  'vscodevim.vim'
-)
-
-$VSCodeUserCfgSrcPath = "$XDGConfigHome\user-data\vscode\settings.json"
-
-$VSCodeUserCfgDstPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\settings.json"
-
-$VSCodeUserKbmSrcPath = "$XDGConfigHome\user-data\vscode\keybindings.json"
-
-$VSCodeUserKbmDstPath = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User\keybindings.json"
-
-$VSCodeTermExtWindowsExe = "${env:USERPROFILE}\scoop\shims\pwsh.exe"
-
-$VSCodePwshAddExePaths = @{
-  'scoop' = $VSCodeTermExtWindowsExe
+$Configurations = @{
+  Git = @{
+    Email = "dev@sebastienkeroack.com"
+    Name = "Sébastien Kéroack"
+    CredentialHelper = "store"
+    DefaultBranch = "main"
+    IgnoreCase = $false
+    LongPaths = $true
+  }
+  NeoVim = @{
+    Font = "RobotoMono-NF-Mono"
+    Dependencies = @(
+      @{Name = "fd"; Source = "main"}
+      @{Name = "fzf"; Source = "main"}
+      @{Name = "zig"; Source = "main"}
+      @{Name = "nodejs"; Source = "main"}
+      @{Name = "ripgrep"; Source = "main"}
+      @{Name = "lazygit"; Source = "extras"}
+      @{Name = "vcredist2022"; Source = "extras"}
+      @{Name = "alacritty"; Source = "extras"}
+    )
+  }
+  RequiredPackages = @(
+    @{Name = "pwsh"; Source = "main"}
+  )
+  VSCode = @{
+    Extensions = @(
+      "github.copilot",
+      "github.copilot-chat",
+      "ms-vscode.powershell",
+      "tamasfe.even-better-toml",
+      "vscodevim.vim"
+    )
+    UserData = @{
+      "Source" = "$env:PROJECTROOT\user-data\vscode"
+      "Target" = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User"
+    }
+    Settings = @{
+      "powershell.powerShellDefaultVersion" = "scoop"
+      "powershell.powerShellAdditionalExePaths" = @{
+        "scoop" = "$env:USERPROFILE\scoop\shims\pwsh.exe"
+      }
+      "terminal.external.windowsExec" = "$env:USERPROFILE\scoop\shims\pwsh.exe"
+    }
+  }
 }
 
+$Scoop = [Scoop]::new()
+
 function New-Profile {
-  $Path = Get-PwshProfilePath
-  if (-not (Test-Path $Path)) {
-    New-Item -ItemType File -Path $Path -Force | Out-Null
-    Write-Host "PowerShell profile created at: $Path"
-  } else {
-    Write-Debug "PowerShell profile already exists at: $Path"
+  if (Test-Path ($path = $env:PWSHPROFILE)) {
+    Write-Debug "PowerShell profile already exists at: $path"
+    return
   }
+
+  New-Item -ItemType File -Path $path -Force | Out-Null
+  Write-Host "PowerShell profile created at: $path"
 }
 
 function Install-Git {
-  Install-ScoopBucket 'main'
-  Install-ScoopPackage 'git'
+  Write-Host "Installing Git..."
+  $Git = $Configurations.Git
+  $Scoop.InstallPackage("git", "main")
 
-  git config --global core.ignorecase false
-  git config --global credential.helper 'store'
-  git config --global init.defaultBranch 'main'
-  git config --global user.email $GitUserEmail
-  git config --global user.name $GitUserName
-  git config --system core.longpaths true
+  git config --global user.email "$($Git.Email)"
+  git config --global user.name "$($Git.Name)"
+
+  git config --global credential.helper "$($Git.CredentialHelper)"
+  git config --global init.defaultBranch "$($Git.DefaultBranch)"
+  git config --global core.ignorecase "$($Git.IgnoreCase)"
+  git config --system core.longpaths "$($Git.LongPaths)"
 }
 
 function Install-NeoVim {
-  Install-ScoopBucket 'nerd-fonts'
-  Install-ScoopPackage $NerdFont -Source 'nerd-fonts'
+  Write-Host "Installing NeoVim..."
+  $NeoVim = $Configurations.NeoVim
+  $Scoop.InstallPackage($NeoVim.Font, "nerd-fonts")
 
-  Install-ScoopBucket 'extras'
-  foreach ($pkg in $NeoVimExtraPackages) {
-    Install-ScoopPackage $pkg -Source 'extras'
+  foreach ($dep in $NeoVim.Dependencies) {
+    $Scoop.InstallPackage($dep.Name, $dep.Source)
+
+    if ($dep.Name -eq "alacritty") {
+      New-Junction "alacritty"
+    }
   }
 
-  Install-ScoopBucket 'main'
-  foreach ($pkg in $NeoVimPackages) {
-    Install-ScoopPackage $pkg -Source 'main'
-  }
-
-  Install-ScoopPackage 'alacritty' -Source 'extras'
-  New-Junction 'alacritty'
-
-  Install-ScoopPackage 'neovim'
-  Add-LineToFile -Path (Get-PwshProfilePath) -Line 'Set-Alias neovim nvim'
+  $Scoop.InstallPackage("neovim", "main")
+  Add-LineToFile -Path "$env:PWSHPROFILE" -Line "Set-Alias neovim nvim"
 }
 
 function Install-RequiredPackages {
-  Install-ScoopBucket 'main'
-  foreach ($pkg in $RequiredPackages) {
-    Install-ScoopPackage $pkg -Source 'main'
+  Write-Host "Installing Required packages..."
+  foreach ($pkg in $Configurations.RequiredPackages) {
+    $Scoop.InstallPackage($pkg.Name, $pkg.Source)
   }
 }
 
 function Install-VSCode {
-  Install-ScoopBucket 'extras'
-  Install-ScoopPackage 'vscode' -Source 'extras'
+  Write-Host "Installing VSCode..."
+  $VSCode = $Configurations.VSCode
+  $Scoop.InstallPackage("vscode", "extras")
 
-  foreach ($path in @($VSCodeUserCfgSrcPath, $VSCodeUserCfgDstPath)) {
-    $dir = [System.IO.Path]::GetDirectoryName($path)
-    if (-not (Test-Path $dir)) {
-      Write-Error "Directory does not exist: $dir"
-      return
-    }
+  Write-Host "Copying VSCode user keybindings..."
+  $name = "keybindings.json"
+  $source = "$($VSCode.UserData.Source)\$name"
+  $target = "$($VSCode.UserData.Target)\$name"
+  Backup-AndCopyFile "$source" "$target"
+
+  Write-Host "Copying VSCode user settings..."
+  $name = "settings.json"
+  $source = "$($VSCode.UserData.Source)\$name"
+  $target = "$($VSCode.UserData.Target)\$name"
+  $data = Get-Content "$source" -Raw | ConvertFrom-Json
+  foreach ($option in $VSCode.Settings.GetEnumerator()) {
+    $data | Add-Member `
+      -NotePropertyName $option.Key `
+      -NotePropertyValue $option.Value -Force
   }
+  Backup-File "$target"
+  $data | ConvertTo-Json -Depth 5 | Set-Content -Path "$target" -Encoding UTF8
 
-  Backup-AndCopyFile $VSCodeUserCfgSrcPath $VSCodeUserCfgDstPath
-  Backup-AndCopyFile $VSCodeUserKbmSrcPath $VSCodeUserKbmDstPath
-
-  $Cfg = Get-Content $VSCodeUserCfgDstPath -Raw | ConvertFrom-Json
-  $Cfg | Add-Member `
-    -NotePropertyName 'terminal.external.windowsExec' `
-    -NotePropertyValue $VSCodeTermExtWindowsExe -Force
-  $Cfg | Add-Member `
-    -NotePropertyName 'powershell.powerShellAdditionalExePaths' `
-    -NotePropertyValue $VSCodePwshAddExePaths -Force
-  $Cfg | ConvertTo-Json -Depth 9 | `
-    Set-Content -Path $VSCodeUserCfgDstPath -Encoding UTF8
-
-  Install-VSCodeExtensions -Extensions $VSCodeExtensions
+  Write-Host "Installing VSCode extensions..."
+  $Code = [Code]::new()
+  $Code.InstallExtensions($VSCode.Extensions)
 }
 
-Set-EnvironmentVariable 'XDG_CONFIG_HOME' $XDGConfigHome
+Set-EnvironmentVariable "XDG_CONFIG_HOME" "$env:PROJECTROOT"
 New-Profile
 Install-RequiredPackages
 Install-NeoVim

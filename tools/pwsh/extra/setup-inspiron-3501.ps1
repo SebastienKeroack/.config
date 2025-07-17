@@ -1,32 +1,40 @@
-$ErrorActionPreference = 'Stop'
-. "$PSScriptRoot/../utils.ps1"
+$ErrorActionPreference = "Stop"
+. "$PSScriptRoot/../../utils/common.ps1"
 
-$AHKUrl = 'https://www.autohotkey.com/download/ahk-v2.exe'
+Export-UtilsEnvironmentVariables
 
-$AHKScriptMCATSrcPath = "$(Get-ProjectRoot)\user-data\ahk\middle-click-alt-tab.ahk"
-
-$AHKScriptMCATDstPath = "$env:USERPROFILE\Documents\AutoHotkey\middle-click-alt-tab.ahk"
-
-$AHKSetupPath = "$env:TEMP\ahk-setup.exe"
+$Configurations = @{
+  AHK = @{
+    Url = "https://www.autohotkey.com/download/ahk-v2.exe"
+    Setup = "$env:TEMP\ahk-setup.exe"
+    Scripts = @{
+      Source = "$env:PROJECTROOT\user-data\ahk"
+      Target = "$env:USERPROFILE\Documents\AutoHotkey"
+    }
+  }
+}
 
 function Install-AutoHotKey {
-  Write-Host 'Downloading AutoHotkey...'
-  Invoke-WebRequest -Uri $AHKUrl -OutFile $AHKSetupPath
-  Invoke-WebRequest -Uri "https://www.autohotkey.com/download/ahk-v2.exe" -OutFile "$env:TEMP\ahk-setup.exe"
-  if (-not (Test-Path $WSLKernelMSIPath)) {
-    Write-Error 'Failed to download AutoHotKey.'
+  Write-Host "Installing AutoHotKey..."
+  $AHK = $Configurations.AHK
+
+  Invoke-WebRequest -Uri "$($AHK.Url)" -OutFile "$($AHK.Setup)"
+  if (-not (Test-Path "$($AHK.Setup)")) {
+    Write-Error "Failed to download AutoHotKey."
     return
   }
 
-  Write-Host 'Installing AutoHotKey...'
-  Start-Process $AHKSetupPath -ArgumentList "/silent" -Wait
-  Write-Host 'AutoHotKey installed successfully.'
-  Remove-Item $AHKSetupPath
+  Start-Process "$($AHK.Setup)" -ArgumentList "/silent" -Wait
+  Write-Host "AutoHotKey installed successfully."
+  Remove-Item "$($AHK.Setup)"
 
-  Write-Host 'Copying AutoHotKey script...'
-  Copy-Item -Path $AHKScriptMCATSrcPath -Destination $AHKScriptMCATDstPath
-  Start-Process $AHKScriptMCATDstPath
-  Write-Host 'AutoHotKey script copied and started.'
+  Write-Host "Copying AutoHotKey script..."
+  $name = "middle-click-alt-tab.ahk"
+  $source = "$($AHK.Scripts.Source)\$name"
+  $target = "$($AHK.Scripts.Target)\$name"
+  Copy-Item -Path "$source" -Destination "$target"
+  Start-Process "$target"
+  Write-Host "AutoHotKey script copied and started."
 }
 
 # Use AutoHotKey to change the middle-click behavior
