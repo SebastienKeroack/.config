@@ -34,6 +34,7 @@ $Configurations = @{
     Extensions = @(
       "github.copilot",
       "github.copilot-chat",
+      "ms-vscode-remote.remote-ssh",
       "ms-vscode.powershell",
       "tamasfe.even-better-toml",
       "vscodevim.vim"

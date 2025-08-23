@@ -40,6 +40,7 @@
     { "text": "Use lowercase scope if relevant. Reference issues with #number." },
     { "text": "Keep subject concise. Separate body/footer with blank lines if needed." }
   ],
+  "remote.SSH.showLoginTerminal": false,
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "workbench.preferredDarkColorTheme": "Default Dark+",
   "workbench.preferredLightColorTheme": "Default Light+",
