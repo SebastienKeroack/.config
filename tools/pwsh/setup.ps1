@@ -51,6 +51,13 @@ $Configurations = @{
       "terminal.external.windowsExec" = "$env:USERPROFILE\scoop\shims\pwsh.exe"
     }
   }
+  OMP = @{
+    Theme = "blueish.json"
+    UserData = @{
+      "Source" = "$env:PROJECTROOT\user-data\omp"
+      "Target" = "$env:USERPROFILE\oh-my-posh\themes"
+    }
+  }
 }
 
 $Scoop = [Scoop]::new()
@@ -132,9 +139,33 @@ function Install-VSCode {
   $Code.InstallExtensions($VSCode.Extensions)
 }
 
+function Install-OhMyPosh {
+  Write-Host "Installing OhMyPosh..."
+  $OMP = $Configurations.OMP
+  $Scoop.InstallPackage("oh-my-posh", "main")
+
+  Write-Host "Copying theme..."
+  $name = $OMP.Theme
+  $source = "$($OMP.UserData.Source)\$name"
+  $target = "$($OMP.UserData.Target)\$name"
+  $targetDir = Split-Path -Path "$target" -Parent
+  if (-not (Test-Path "$targetDir")) {
+    New-Item -ItemType Directory -Path "$targetDir" -Force | Out-Null
+    Copy-Item -Path "$source" -Destination "$target"
+    Write-Host "File '$name' copied to: '$target'"
+  } else {
+    Backup-AndCopyFile "$source" "$target"
+  }
+
+  Write-Host "Configuring PowerShell profile to use OhMyPosh..."
+  Add-LineToFile -Path "$env:PWSHPROFILE" -Line `
+    "oh-my-posh init pwsh --config '$target' | Invoke-Expression"
+}
+
 Set-EnvironmentVariable "XDG_CONFIG_HOME" "$env:PROJECTROOT"
 New-Profile
 Install-RequiredPackages
 Install-NeoVim
 Install-Git
 Install-VSCode
+Install-OhMyPosh

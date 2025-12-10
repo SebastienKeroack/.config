@@ -122,7 +122,7 @@ function Backup-AndCopyFile {
   }
 
   try {
-    Move-Item "$Dst" "$Dst.bak"
+    if (Test-Path "$Dst") { Move-Item "$Dst" "$Dst.bak" }
     $Name = [System.IO.Path]::GetFileName($Src)
   } catch {
     if (-not $Name) {
