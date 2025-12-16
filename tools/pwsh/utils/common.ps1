@@ -1,6 +1,7 @@
 function Export-UtilsEnvironmentVariables {
   $env:PROJECTROOT = Get-ProjectRoot
   $env:PWSHPROFILE = Get-PwshProfile
+  $env:WPSHPROFILE = Get-WpshProfile
 }
 
 function Get-ProjectRoot {
@@ -9,7 +10,13 @@ function Get-ProjectRoot {
 }
 
 function Get-PwshProfile {
-  return $PROFILE.CurrentUserAllHosts
+  $Documents = [Environment]::GetFolderPath('MyDocuments')
+  return Join-Path $Documents 'PowerShell\profile.ps1'
+}
+
+function Get-WpshProfile {
+  $Documents = [Environment]::GetFolderPath('MyDocuments')
+  return Join-Path $Documents 'WindowsPowerShell\profile.ps1'
 }
 
 function Add-LineToFile {

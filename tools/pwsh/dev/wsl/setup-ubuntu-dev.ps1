@@ -20,15 +20,11 @@ if (-not (Test-Path "$DistroTempTarFile")) {
   # 2. Export the distribution to a tar file
   Write-Host "Exporting the distribution..."
   wsl --export $Name "$DistroTempTarFile"
-
-  # 3. Unregister the original distribution
-  #Write-Host "Unregistering the original distribution '$Name'..."
-  #wsl --unregister $Name
 } else {
   Write-Debug "Temporary tar file '$DistroTempTarFile' already exists."
 }
 
-# 4. Import with a custom name
+# 3. Import with a custom name
 $DistrosLocation = "$env:USERPROFILE\WSL"
 if (-not (Test-Path "$DistrosLocation")) {
   New-Item -ItemType Directory -Path "$DistrosLocation" | Out-Null
@@ -39,7 +35,7 @@ if (-not (Test-Path "$DistrosLocation")) {
 $DesiredName = $Configurations.Distribution.DesiredName
 $DistroLocation = "$DistrosLocation/$DesiredName"
 if (-not (Test-Path "$DistroLocation")) {
-  # 5. Import the configuration file
+  # 4. Import the configuration file
   Write-Host @"
 Import the distribution as '$DesiredName' to '$DistroLocation'
 After importing the distribution, you may see a warning in PowerShell that the
@@ -47,17 +43,17 @@ terminal icon for the distribution profile cannot be found. To fix this, open
 Windows Terminal settings, go to 'Profiles' for your distribution, and remove
 the '//?/' prefix from the icon path.
 "@
-  wsl --import $WSLDist.DesiredName "$DistroLocation" "$DistroTempTarFile"
+  New-Item -ItemType Directory -Path "$DistroLocation" | Out-Null
+  wsl --import "$DesiredName" "$DistroLocation" "$DistroTempTarFile"
 
-  # 6. Copy the init file into the distribution
-  Write-Host "Copying init file into the distribution '$DesiredName'..."
-  Copy-Item -Path "init.sh" -Destination "\\wsl.localhost\$DesiredName\tmp\init.sh"
-
-  # 7. Execute the init file
+  # 5. Execute the init file
   Write-Host "Executing the init file..."
-  wsl -d $WSLDist.DesiredName -e bash "/tmp/init.sh"
+  wsl -d "$DesiredName" -e bash init.sh
 
-  wsl --terminate $WSLDist.DesiredName
+  # 6. Set the default distribution (optional)
+  Write-Host "Setting '$DesiredName' as the default distribution..."
+  wsl --set-default "$DesiredName"
+  wsl --terminate "$DesiredName"
 } else {
   Write-Debug "Config file '$DistroLocation' already exists."
 }

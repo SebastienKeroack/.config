@@ -63,13 +63,17 @@ $Configurations = @{
 $Scoop = [Scoop]::new()
 
 function New-Profile {
-  if (Test-Path ($path = $env:PWSHPROFILE)) {
-    Write-Debug "PowerShell profile already exists at: $path"
+  param (
+    [string]$Path
+  )
+
+  if (Test-Path ($Path)) {
+    Write-Debug "PowerShell profile already exists at: $Path"
     return
   }
 
-  New-Item -ItemType File -Path $path -Force | Out-Null
-  Write-Host "PowerShell profile created at: $path"
+  New-Item -ItemType File -Path $Path -Force | Out-Null
+  Write-Host "PowerShell profile created at: $Path"
 }
 
 function Install-Git {
@@ -101,6 +105,7 @@ function Install-NeoVim {
 
   $Scoop.InstallPackage("neovim", "main")
   Add-LineToFile -Path "$env:PWSHPROFILE" -Line "Set-Alias neovim nvim"
+  Add-LineToFile -Path "$env:WPSHPROFILE" -Line "Set-Alias neovim nvim"
 }
 
 function Install-RequiredPackages {
@@ -160,10 +165,13 @@ function Install-OhMyPosh {
   Write-Host "Configuring PowerShell profile to use OhMyPosh..."
   Add-LineToFile -Path "$env:PWSHPROFILE" -Line `
     "oh-my-posh init pwsh --config '$target' | Invoke-Expression"
+  Add-LineToFile -Path "$env:WPSHPROFILE" -Line `
+    "oh-my-posh init pwsh --config '$target' | Invoke-Expression"
 }
 
 Set-EnvironmentVariable "XDG_CONFIG_HOME" "$env:PROJECTROOT"
-New-Profile
+New-Profile $env:PWSHPROFILE
+New-Profile $env:WPSHPROFILE
 Install-RequiredPackages
 Install-NeoVim
 Install-Git

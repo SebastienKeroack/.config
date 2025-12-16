@@ -9,10 +9,19 @@
 
 set -u
 
+# see: https://github.com/asdf-vm/asdf/releases
 ASDF_VER="0.18.0"
 ASDF_ARCHIVE="asdf-v$ASDF_VER-linux-amd64.tar.gz"
 ASDF_ARCHIVE_URL="https://github.com/asdf-vm/asdf/releases/download/v$ASDF_VER/$ASDF_ARCHIVE"
 CURRENT_USER=$(whoami)
+
+# Add a newline before the shell prompt in .bashrc
+tee -a ~/.bashrc <<EOF
+# Add a newline before the shell prompt in .bashrc if not already present:
+if [[ "\$PS1" != *"\\n\\$ "* ]]; then
+  PS1=\$(echo "\$PS1" | sed 's/\\\\$ /\\\n\\\\$ /')
+fi
+EOF
 
 # Setup WSL Ubuntu configuration
 echo "# @see: https://learn.microsoft.com/en-us/windows/wsl/wsl-config
@@ -61,12 +70,6 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 
 
 # Set LLVM to use version 18 by default
 sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-18 100
-
-# Install required packages to compile Python
-sudo apt-get install -y build-essential gdb lcov pkg-config \
-  libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
-  libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
-  lzma lzma-dev tk-dev uuid-dev zlib1g-dev libzstd-dev
 
 # Clean up
 sudo apt-get clean
