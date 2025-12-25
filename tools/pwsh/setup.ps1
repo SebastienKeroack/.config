@@ -11,6 +11,7 @@ $Configurations = @{
     Name = "Sébastien Kéroack"
     CredentialHelper = "store"
     DefaultBranch = "main"
+    AutoCRLF = $false
     IgnoreCase = $false
     LongPaths = $true
   }
@@ -86,6 +87,7 @@ function Install-Git {
 
   git config --global credential.helper "$($Git.CredentialHelper)"
   git config --global init.defaultBranch "$($Git.DefaultBranch)"
+  git config --global core.autocrlf "$($Git.AutoCRLF)"
   git config --global core.ignorecase "$($Git.IgnoreCase)"
   git config --system core.longpaths "$($Git.LongPaths)"
 }
