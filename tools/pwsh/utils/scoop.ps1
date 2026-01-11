@@ -58,10 +58,8 @@ class Scoop {
 
     if ($Source) {
       $this.AddBucket($Source)
-      scoop install $Name -s $Source
-    } else {
-      scoop install $Name
     }
+    scoop install $Name
 
     $this.Packages.Add($Name)
   }
