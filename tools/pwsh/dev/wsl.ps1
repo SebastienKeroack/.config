@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
-. "$PSScriptRoot/../utils/code.ps1"
-. "$PSScriptRoot/../utils/common.ps1"
+. "tools/pwsh/utils/code.ps1"
+. "tools/pwsh/utils/common.ps1"
 
 Export-UtilsEnvironmentVariables
 
@@ -57,13 +57,14 @@ function Install-WSL {
   dism.exe /online /enable-feature `
     /featurename:VirtualMachinePlatform /all /norestart
 
-  Install-Kernel
+  #Install-Kernel
 
   # Set WSL2 as the default version
   wsl --set-default-version 2
 
-  $source = "$($Configurations.UserData.Source)\.wslconfig"
-  $target = "$($Configurations.UserData.Target)\.wslconfig"
+  $WSL = $Configurations.WSL
+  $source = "$($WSL.UserData.Source)\.wslconfig"
+  $target = "$($WSL.UserData.Target)\.wslconfig"
   Backup-AndCopyFile "$source" "$target"
   Write-Host "WSL configuration file created with default settings."
   Write-Host "WSL installed. Please restart your computer."

@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-. "$PSScriptRoot/../../utils/common.ps1"
+. "tools/pwsh/utils/common.ps1"
 
 Export-UtilsEnvironmentVariables
 

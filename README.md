@@ -24,4 +24,5 @@ This repository contains scripts and configuration for setting up a Windows deve
    Installs and configures all tools and settings:
    ```powershell
    ./tools/pwsh/setup.ps1
+   ./tools/pwsh/dev/wsl.ps1
    ```

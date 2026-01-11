@@ -7,6 +7,8 @@ networkingMode=mirrored
 firewall=true
 dnsTunneling=true
 defaultVhdSize=128GB
+swap=0
+memory=12884901888
 
 [experimental]
 autoMemoryReclaim=gradual

@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
-. "$PSScriptRoot/utils/code.ps1"
-. "$PSScriptRoot/utils/common.ps1"
-. "$PSScriptRoot/utils/scoop.ps1"
+. "tools/pwsh/utils/code.ps1"
+. "tools/pwsh/utils/common.ps1"
+. "tools/pwsh/utils/scoop.ps1"
 
 Export-UtilsEnvironmentVariables
 
@@ -28,9 +28,6 @@ $Configurations = @{
       @{Name = "alacritty"; Source = "extras"}
     )
   }
-  RequiredPackages = @(
-    @{Name = "pwsh"; Source = "main"}
-  )
   VSCode = @{
     Extensions = @(
       "github.copilot",
@@ -42,21 +39,7 @@ $Configurations = @{
     )
     UserData = @{
       "Source" = "$env:PROJECTROOT\user-data\vscode"
-      "Target" = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User"
-    }
-    Settings = @{
-      "powershell.powerShellDefaultVersion" = "scoop"
-      "powershell.powerShellAdditionalExePaths" = @{
-        "scoop" = "$env:USERPROFILE\scoop\shims\pwsh.exe"
-      }
-      "terminal.external.windowsExec" = "$env:USERPROFILE\scoop\shims\pwsh.exe"
-    }
-  }
-  OMP = @{
-    Theme = "blueish.json"
-    UserData = @{
-      "Source" = "$env:PROJECTROOT\user-data\omp"
-      "Target" = "$env:USERPROFILE\oh-my-posh\themes"
+      "Target" = "$env:USERPROFILE\AppData\Roaming\Code\User"
     }
   }
 }
@@ -80,7 +63,7 @@ function New-Profile {
 function Install-Git {
   Write-Host "Installing Git..."
   $Git = $Configurations.Git
-  $Scoop.InstallPackage("git", "main")
+  #$Scoop.InstallPackage("git", "main")
 
   git config --global user.email "$($Git.Email)"
   git config --global user.name "$($Git.Name)"
@@ -110,17 +93,17 @@ function Install-NeoVim {
   Add-LineToFile -Path "$env:WPSHPROFILE" -Line "Set-Alias neovim nvim"
 }
 
-function Install-RequiredPackages {
-  Write-Host "Installing Required packages..."
-  foreach ($pkg in $Configurations.RequiredPackages) {
-    $Scoop.InstallPackage($pkg.Name, $pkg.Source)
+function Install-PowerShell {
+  if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
+    Write-Host "Install PowerShell"
+    iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
   }
 }
 
 function Install-VSCode {
   Write-Host "Installing VSCode..."
   $VSCode = $Configurations.VSCode
-  $Scoop.InstallPackage("vscode", "extras")
+  #$Scoop.InstallPackage("vscode", "extras")
 
   Write-Host "Copying VSCode user keybindings..."
   $name = "keybindings.json"
@@ -132,50 +115,17 @@ function Install-VSCode {
   $name = "settings.json"
   $source = "$($VSCode.UserData.Source)\$name"
   $target = "$($VSCode.UserData.Target)\$name"
-  $data = Get-Content "$source" -Raw | ConvertFrom-Json
-  foreach ($option in $VSCode.Settings.GetEnumerator()) {
-    $data | Add-Member `
-      -NotePropertyName $option.Key `
-      -NotePropertyValue $option.Value -Force
-  }
-  Backup-File "$target"
-  $data | ConvertTo-Json -Depth 5 | Set-Content -Path "$target" -Encoding UTF8
+  Backup-AndCopyFile "$source" "$target"
 
   Write-Host "Installing VSCode extensions..."
   $Code = [Code]::new()
   $Code.InstallExtensions($VSCode.Extensions)
 }
 
-function Install-OhMyPosh {
-  Write-Host "Installing OhMyPosh..."
-  $OMP = $Configurations.OMP
-  $Scoop.InstallPackage("oh-my-posh", "main")
-
-  Write-Host "Copying theme..."
-  $name = $OMP.Theme
-  $source = "$($OMP.UserData.Source)\$name"
-  $target = "$($OMP.UserData.Target)\$name"
-  $targetDir = Split-Path -Path "$target" -Parent
-  if (-not (Test-Path "$targetDir")) {
-    New-Item -ItemType Directory -Path "$targetDir" -Force | Out-Null
-    Copy-Item -Path "$source" -Destination "$target"
-    Write-Host "File '$name' copied to: '$target'"
-  } else {
-    Backup-AndCopyFile "$source" "$target"
-  }
-
-  Write-Host "Configuring PowerShell profile to use OhMyPosh..."
-  Add-LineToFile -Path "$env:PWSHPROFILE" -Line `
-    "oh-my-posh init pwsh --config '$target' | Invoke-Expression"
-  Add-LineToFile -Path "$env:WPSHPROFILE" -Line `
-    "oh-my-posh init pwsh --config '$target' | Invoke-Expression"
-}
-
 Set-EnvironmentVariable "XDG_CONFIG_HOME" "$env:PROJECTROOT"
 New-Profile $env:PWSHPROFILE
 New-Profile $env:WPSHPROFILE
-Install-RequiredPackages
+Install-PowerShell
 Install-NeoVim
 Install-Git
 Install-VSCode
-Install-OhMyPosh
