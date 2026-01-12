@@ -8,6 +8,10 @@ $Configurations = @{
     Name = "Ubuntu-24.04"
     DesiredName = "ubuntu-dev"
   }
+  InitScript = @{
+    Source = "tools/pwsh/dev/wsl/init.sh"
+    Target = "/root/init.sh"
+  }
 }
 
 $Name = $Configurations.Distribution.Name
@@ -46,11 +50,17 @@ the '//?/' prefix from the icon path.
   New-Item -ItemType Directory -Path "$DistroLocation" | Out-Null
   wsl --import "$DesiredName" "$DistroLocation" "$DistroTempTarFile"
 
-  # 5. Execute the init file
-  Write-Host "Executing the init file..."
-  wsl -d "$DesiredName" -e bash init.sh
+  # 5. Import init file
+  $InitScript = $Configurations.InitScript
+  Write-Host "Copying init.sh into the distribution..."
+  (Get-Content $InitScript.Source -Raw) -replace "`r`n", "`n" `
+  | wsl -d "$DesiredName" -- tee $InitScript.Target > $null
 
-  # 6. Set the default distribution (optional)
+  # 6. Execute the init file
+  Write-Host "Executing the init file..."
+  wsl -d "$DesiredName" -- bash $InitScript.Target
+
+  # 7. Set the default distribution (optional)
   Write-Host "Setting '$DesiredName' as the default distribution..."
   wsl --set-default "$DesiredName"
   wsl --terminate "$DesiredName"

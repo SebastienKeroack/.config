@@ -10,23 +10,24 @@
 set -u
 
 # see: https://github.com/asdf-vm/asdf/releases
-ASDF_VER="0.18.0"
-ASDF_ARCHIVE="asdf-v$ASDF_VER-linux-amd64.tar.gz"
-ASDF_ARCHIVE_URL="https://github.com/asdf-vm/asdf/releases/download/v$ASDF_VER/$ASDF_ARCHIVE"
+#ASDF_VER="0.18.0"
+#ASDF_ARCHIVE="asdf-v$ASDF_VER-linux-amd64.tar.gz"
+#ASDF_ARCHIVE_URL="https://github.com/asdf-vm/asdf/releases/download/v$ASDF_VER/$ASDF_ARCHIVE"
 CURRENT_USER=$(whoami)
 
 # Add a newline before the shell prompt in .bashrc
 tee -a ~/.bashrc <<EOF
-# Add a newline before the shell prompt in .bashrc if not already present:
+
+# Customize shell prompt:
 if [[ "\$PS1" != *"\\n\\$ "* ]]; then
   PS1=\$(echo "\$PS1" | sed 's/\\\\$ /\\\n\\\\$ /')
 fi
 EOF
 
 # Setup WSL Ubuntu configuration
-echo "# @see: https://learn.microsoft.com/en-us/windows/wsl/wsl-config
+tee /etc/wsl.conf <<EOF
+# @see: https://learn.microsoft.com/en-us/windows/wsl/wsl-config
 [boot]
-command=\"\"
 systemd=true
 
 [automount]
@@ -46,31 +47,32 @@ enabled=true
 useWindowsTimezone=true
 
 [user]
-default=$CURRENT_USER" | sudo tee /etc/wsl.conf
+default=$CURRENT_USER
+EOF
 
-sudo apt-get update
-sudo apt-get upgrade -y
+apt-get update
+apt-get upgrade -y
 
 # Install ASDF
-sudo apt-get install -y git git-lfs unzip zip
-mkdir -p "$HOME/.local/bin"
-curl -Lo "$ASDF_ARCHIVE" "$ASDF_ARCHIVE_URL"
-tar -xzf "$ASDF_ARCHIVE" -C "$HOME/.local/bin"
-rm -f "$ASDF_ARCHIVE"
-chmod +x "$HOME/.local/bin/asdf"
-echo 'export PATH="$PATH:$HOME/.local/bin:$HOME/.asdf/shims"' >> "$HOME/.bash_profile"
-source "$HOME/.bash_profile"
+#sudo apt-get install -y git git-lfs unzip zip
+#mkdir -p "$HOME/.local/bin"
+#curl -Lo "$ASDF_ARCHIVE" "$ASDF_ARCHIVE_URL"
+#tar -xzf "$ASDF_ARCHIVE" -C "$HOME/.local/bin"
+#rm -f "$ASDF_ARCHIVE"
+#chmod +x "$HOME/.local/bin/asdf"
+#echo 'export PATH="$PATH:$HOME/.local/bin:$HOME/.asdf/shims"' >> "$HOME/.bash_profile"
+#source "$HOME/.bash_profile"
 
 # Install Clang
-sudo apt-get install -y make llvm-18 clang-18 clang-format
+#sudo apt-get install -y make llvm-18 clang-18 clang-format
 
 # Set clang and clang++ to use version 18 by default
-sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+#sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+#sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
 
 # Set LLVM to use version 18 by default
-sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-18 100
+#sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-18 100
 
 # Clean up
-sudo apt-get clean
-sudo rm -rf /var/lib/apt/lists/*
+apt-get clean
+rm -rf /var/lib/apt/lists/*

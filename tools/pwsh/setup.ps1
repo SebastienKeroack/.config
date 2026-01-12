@@ -35,7 +35,8 @@ $Configurations = @{
       "ms-vscode-remote.remote-ssh",
       "ms-vscode.powershell",
       "tamasfe.even-better-toml",
-      "vscodevim.vim"
+      "vscodevim.vim",
+      "dart-code.flutter"
     )
     UserData = @{
       "Source" = "$env:PROJECTROOT\user-data\vscode"
