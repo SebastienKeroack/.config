@@ -2,14 +2,17 @@
 [wsl2]
 guiApplications=true
 nestedVirtualization=true
+defaultVhdSize=64GB
 vmIdleTimeout=1800000
-networkingMode=mirrored
-firewall=true
-dnsTunneling=true
-defaultVhdSize=128GB
-swap=0
 memory=12884901888
+swap=0
+autoProxy=true
+localhostForwarding=true
+networkingMode=nat
+firewall=false
+dnsTunneling=false
 
 [experimental]
 autoMemoryReclaim=gradual
 hostAddressLoopback=true
+ignoredPorts=53

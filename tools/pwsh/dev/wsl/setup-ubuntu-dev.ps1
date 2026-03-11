@@ -6,7 +6,7 @@ Export-UtilsEnvironmentVariables
 $Configurations = @{
   Distribution = @{
     Name = "Ubuntu-24.04"
-    DesiredName = "ubuntu-dev"
+    DesiredName = "dev"
   }
   InitScript = @{
     Source = "tools/pwsh/dev/wsl/init.sh"
@@ -29,7 +29,7 @@ if (-not (Test-Path "$DistroTempTarFile")) {
 }
 
 # 3. Import with a custom name
-$DistrosLocation = "$env:USERPROFILE\WSL"
+$DistrosLocation = "$env:USERPROFILE\wsl"
 if (-not (Test-Path "$DistrosLocation")) {
   New-Item -ItemType Directory -Path "$DistrosLocation" | Out-Null
 } else {
@@ -37,7 +37,7 @@ if (-not (Test-Path "$DistrosLocation")) {
 }
 
 $DesiredName = $Configurations.Distribution.DesiredName
-$DistroLocation = "$DistrosLocation/$DesiredName"
+$DistroLocation = "$DistrosLocation\$DesiredName"
 if (-not (Test-Path "$DistroLocation")) {
   # 4. Import the configuration file
   Write-Host @"

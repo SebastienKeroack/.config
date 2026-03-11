@@ -30,12 +30,10 @@ tee /etc/wsl.conf <<EOF
 [boot]
 systemd=true
 
-[automount]
-enabled=true
-
 [network]
-generateHosts=true
-generateResolvConf=true
+hostname=node-cac1-az1-rackv-1
+generateHosts=false
+generateResolvConf=false
 
 [interop]
 appendWindowsPath=true
@@ -44,34 +42,45 @@ appendWindowsPath=true
 enabled=true
 
 [time]
-useWindowsTimezone=true
+useWindowsTimezone=false
 
 [user]
 default=$CURRENT_USER
+
+[automount]
+enabled=true
+mountFsTab=true
+options="uid=1000,gid=1000,umask=22,fmask=11,metadata"
+root=/mnt/
 EOF
 
+install_persistent_lan0_link_wsl() {
+  local link_dir link_file
+
+  link_dir="/etc/systemd/network"
+  link_file="$link_dir/10-lan0.link"
+
+  mkdir -p "$link_dir" || return 1
+
+  # In WSL the vNIC MAC often changes between boots, so don't match on MAC.
+  # Match the original kernel name (ethX) and rename it to lan0.
+  cat > "$link_file" <<'EOF'
+[Match]
+OriginalName=eth*
+
+[Link]
+Name=lan0
+EOF
+
+  return 0
+}
+
+# Install persistent rule (takes effect next boot)
+install_persistent_lan0_link_wsl || echo "failed to install persistent lan0 rule" >&2
+
+# Update and upgrade packages
 apt-get update
 apt-get upgrade -y
-
-# Install ASDF
-#sudo apt-get install -y git git-lfs unzip zip
-#mkdir -p "$HOME/.local/bin"
-#curl -Lo "$ASDF_ARCHIVE" "$ASDF_ARCHIVE_URL"
-#tar -xzf "$ASDF_ARCHIVE" -C "$HOME/.local/bin"
-#rm -f "$ASDF_ARCHIVE"
-#chmod +x "$HOME/.local/bin/asdf"
-#echo 'export PATH="$PATH:$HOME/.local/bin:$HOME/.asdf/shims"' >> "$HOME/.bash_profile"
-#source "$HOME/.bash_profile"
-
-# Install Clang
-#sudo apt-get install -y make llvm-18 clang-18 clang-format
-
-# Set clang and clang++ to use version 18 by default
-#sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
-#sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
-
-# Set LLVM to use version 18 by default
-#sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-18 100
 
 # Clean up
 apt-get clean
